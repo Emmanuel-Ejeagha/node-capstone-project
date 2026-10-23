@@ -1,20 +1,22 @@
-import dotenv from 'dotenv'
+import dotenv from "dotenv";
 
-dotenv.config()
+dotenv.config();
 
 function checkRequiredEnvVariables(key: string): string {
   const value = process.env[key];
 
-  if (!value){
-    throw new Error(`Missing env variables for ${key}`)
+  if (!value) {
+    throw new Error(`Missing env variables for ${key}`);
   }
   return value;
-} 
+}
 
 export const env = {
   port: Number(process.env.PORT ?? 3000),
   isProduction: (process.env.NODE_ENV ?? "developement") === "production",
   nodeEnv: process.env.NODE_ENV ?? "development",
   logLevel: process.env.LOG_LEVEL ?? "info",
-  databaseUrl: checkRequiredEnvVariables('DATABASE_URL')
-} as const
+  databaseUrl: checkRequiredEnvVariables("DATABASE_URL"),
+  jwtAccessSecret: checkRequiredEnvVariables("JWT_SECRET"),
+  jwtAccessExpiresIn: checkRequiredEnvVariables("JWT_ACCESS_EXPIRES_IN"),
+} as const;
