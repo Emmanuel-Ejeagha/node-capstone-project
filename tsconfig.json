@@ -1,4 +1,3 @@
-
 {
   "compilerOptions": {
     // File Layout
@@ -22,7 +21,7 @@
     // Strict Type Checking
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+    // "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true,
 
     // Module Settings
