@@ -4,6 +4,10 @@ import { logger } from "./lib/logger.js";
 
 const app = createApp();
 
-app.listen(env.port, () =>{
-  logger.info(`Server is now running on port http//:localhost:${env.port}`)
-})
+const server = app.listen(env.port, "127.0.0.1", () => {
+  logger.info({ address: server.address() }, "HTTP server is listening");
+});
+
+server.on("error", (err) => {
+  logger.error({ err }, "HTTP server failed to start");
+});
