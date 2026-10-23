@@ -1,18 +1,19 @@
-import express from 'express'
-import { errorHandler } from './middleware/errorHandler.js';
-import { notFound } from './middleware/notFound.js';
-import cors from 'cors'
-import { apiRouter } from './routes/index.js';
+import express from "express";
+import { errorHandler } from "./middleware/errorHandler.js";
+import { notFound } from "./middleware/notFound.js";
+import cors from "cors";
+import { apiRouter } from "./routes/index.js";
 
-export function createApp(){
+export function createApp() {
   const app = express();
 
-  app.use(cors())
-  app.use(express.json())
-  app.use(express.urlencoded({ extended: true}))
-  app.use("/api", apiRouter)
-  app.use(notFound)
-  app.use(errorHandler)
+  app.use(cors());
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+
+  app.use("/api", apiRouter);
+  app.use(notFound);
+  app.use(errorHandler);
 
   return app;
 }
