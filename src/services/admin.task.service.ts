@@ -1,4 +1,4 @@
-import { TASK_STATUS } from "../consts/taskStatus.js";
+import { TASK_STATUS } from "../consts/consts.js";
 import { AppError } from "../errors/AppError.js";
 import { findAllTasks } from "../repositories/admin.task.repositories.js";
 import { updateTaskStatus } from "../repositories/user.task.repositories.js";
