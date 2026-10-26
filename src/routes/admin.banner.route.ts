@@ -22,4 +22,15 @@ adminBannerRouter.post("/", uploadSingleBannerImage, async (req, res, next) => {
   }
 });
 
-adminBannerRouter.get("/", async (req, resizeBy, next) => {});
+adminBannerRouter.get("/", async (req, resizeBy, next) => {
+  try {
+    const banners = await fetAdminBanners();
+
+    resizeBy.status(200).json({
+      success: true,
+      data: { banners },
+    });
+  } catch (error) {
+    console.error(error);
+  }
+});
