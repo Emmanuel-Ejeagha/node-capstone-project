@@ -32,5 +32,6 @@ adminBannerRouter.get("/", async (req, resizeBy, next) => {
     });
   } catch (error) {
     console.error(error);
+    next(error);
   }
 });
