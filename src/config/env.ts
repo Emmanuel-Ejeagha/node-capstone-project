@@ -19,4 +19,7 @@ export const env = {
   databaseUrl: checkRequiredEnvVariables("DATABASE_URL"),
   jwtAccessSecret: checkRequiredEnvVariables("JWT_SECRET"),
   jwtAccessExpiresIn: checkRequiredEnvVariables("JWT_ACCESS_EXPIRES_IN"),
+  cloudinaryCloudName: checkRequiredEnvVariables("CLOUDINARY_CLOUD_NAME"),
+  cloudinaryApiKey: checkRequiredEnvVariables("CLOUDINARY_API_KEY"),
+  cloudinaryApiSecret: checkRequiredEnvVariables("CLOUDINARY_API_SECRET"),
 } as const;
