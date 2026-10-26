@@ -1,4 +1,4 @@
-import { TASK_STATUS } from "../consts/taskStatus.js";
+import { TASK_STATUS } from "../consts/consts.js";
 import { Task } from "./task.js";
 
 export type AdminTaskListQuery = {
