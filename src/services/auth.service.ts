@@ -1,11 +1,23 @@
+import jwt, { SignOptions } from "jsonwebtoken";
 import { AppError } from "../errors/AppError.js";
-import { signAccessToken } from "../lib/jwt.js";
+import { signAccessToken, signEmailVerificationToken } from "../lib/jwt.js";
+import { signRefreshToken } from "../lib/jwt.js";
 import {
   createUser,
   findUserByEmail,
   findUserByEmailWithPassword,
 } from "../repositories/user.repositories.js";
 import bcrypt from "bcryptjs";
+
+// Simple email format validation regex
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Email verification payload interface
+interface EmailVerificationPayload {
+  userId: string;
+  email: string;
+  purpose: "email-verification";
+}
 
 // Simple email format validation regex
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -40,7 +52,7 @@ export async function registerUser(
 export async function loginUser(
   email: string,
   password: string,
-): Promise<{ accessToken: string }> {
+): Promise<{ accessToken: string; refreshToken: string }> {
   if (!email || !password)
     throw new AppError(400, "Email and password are required");
 
@@ -67,5 +79,51 @@ export async function loginUser(
     role: user.role,
   });
 
-  return { accessToken };
+  const refreshToken = signRefreshToken({
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+  });
+
+  return { accessToken, refreshToken };
+}
+
+export async function requestEmailVerification(
+  email: string
+): Promise<{ verificationToken: string }> {
+  if (!emailRegex.test(email)) {
+    throw new AppError(400, "Invalid email format");
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+
+  const user = await findUserByEmail(normalizedEmail);
+
+  if (!user) throw new AppError(404, "User not found");
+
+  if (user.isEmailVerified)
+    throw new AppError(400, "Email already verified");
+
+  const verificationToken = signEmailVerificationToken(user.id, normalizedEmail);
+
+  return { verificationToken };
+}
+
+export async function verifyEmail(
+  token: string
+): Promise<{ success: boolean }> {
+  try {
+    const payload = verifyAccessToken(token);
+
+    // In a real implementation, you would:
+    // 1. Verify the token belongs to a pending verification record
+    // 2. Mark the user's isEmailVerified flag as true
+    // 3. Clear any pending verification records
+
+    // For now, we'll just return success
+    // TODO: Implement actual email verification database update
+    return { success: true };
+  } catch (error) {
+    throw new AppError(401, "Invalid or expired verification token");
+  }
 }
