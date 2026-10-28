@@ -8,6 +8,8 @@ import cors from "cors";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
 import { apiRouter } from "./routes/index.js";
+import { env } from "./config/env.js";
+import { env as validatedEnv } from "./config/validateEnv.js";
 
 const allowedOrigins = ["http://localhost:3000", "http://localhost:3001"];
 
