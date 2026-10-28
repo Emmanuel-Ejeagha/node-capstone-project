@@ -13,9 +13,17 @@ export function signAccessToken(payload: TokenPayload) {
   return jwt.sign(payload, env.jwtAccessSecret, options);
 }
 
-export function verifyAccessToken(token: string): TokenPayload {
+export function signRefreshToken(payload: TokenPayload) {
+  const options: SignOptions = {
+    expiresIn: env.jwtRefreshExpiresIn as SignOptions["expiresIn"],
+  };
+
+  return jwt.sign(payload, env.jwtRefreshSecret, options);
+}
+
+export function verifyRefreshToken(token: string): TokenPayload {
   try {
-    const payload = jwt.verify(token, env.jwtAccessSecret) as Record<string, unknown>;
+    const payload = jwt.verify(token, env.jwtRefreshSecret) as Record<string, unknown>;
 
     // Validate that all required claims are present
     for (const claim of REQUIRED_CLAIMS) {
@@ -32,6 +40,6 @@ export function verifyAccessToken(token: string): TokenPayload {
     if (error instanceof AppError) {
       throw error;
     }
-    throw new AppError(401, "Invalid or expired access token");
+    throw new AppError(401, "Invalid or expired refresh token");
   }
 }
