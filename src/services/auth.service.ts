@@ -1,6 +1,6 @@
 import jwt, { SignOptions } from "jsonwebtoken";
 import { AppError } from "../errors/AppError.js";
-import { signAccessToken, signEmailVerificationToken } from "../lib/jwt.js";
+import { signAccessToken, signEmailVerificationToken, verifyAccessToken } from "../lib/jwt.js";
 import { signRefreshToken } from "../lib/jwt.js";
 import {
   createUser,
@@ -18,9 +18,6 @@ interface EmailVerificationPayload {
   email: string;
   purpose: "email-verification";
 }
-
-// Simple email format validation regex
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function registerUser(
   email: string,
@@ -89,7 +86,7 @@ export async function loginUser(
 }
 
 export async function requestEmailVerification(
-  email: string
+  email: string,
 ): Promise<{ verificationToken: string }> {
   if (!emailRegex.test(email)) {
     throw new AppError(400, "Invalid email format");
@@ -101,16 +98,18 @@ export async function requestEmailVerification(
 
   if (!user) throw new AppError(404, "User not found");
 
-  if (user.isEmailVerified)
-    throw new AppError(400, "Email already verified");
+  if (user.isEmailVerified) throw new AppError(400, "Email already verified");
 
-  const verificationToken = signEmailVerificationToken(user.id, normalizedEmail);
+  const verificationToken = signEmailVerificationToken(
+    user.id,
+    normalizedEmail,
+  );
 
   return { verificationToken };
 }
 
 export async function verifyEmail(
-  token: string
+  token: string,
 ): Promise<{ success: boolean }> {
   try {
     const payload = verifyAccessToken(token);
@@ -129,7 +128,7 @@ export async function verifyEmail(
 }
 
 export async function requestPasswordReset(
-  email: string
+  email: string,
 ): Promise<{ resetToken: string }> {
   if (!emailRegex.test(email)) {
     throw new AppError(400, "Invalid email format");
@@ -154,7 +153,7 @@ export async function requestPasswordReset(
 
 export async function resetPassword(
   token: string,
-  newPassword: string
+  newPassword: string,
 ): Promise<{ success: boolean }> {
   try {
     // Verify the token

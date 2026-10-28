@@ -57,3 +57,26 @@ export function signEmailVerificationToken(userId: string, email: string): strin
 
   return jwt.sign(payload, env.jwtAccessSecret, options);
 }
+
+export function verifyAccessToken(token: string): TokenPayload {
+  try {
+    const payload = jwt.verify(token, env.jwtAccessSecret) as Record<string, unknown>;
+
+    // Validate that all required claims are present
+    for (const claim of REQUIRED_CLAIMS) {
+      if (!payload[claim]) {
+        throw new AppError(
+          401,
+          `Invalid token: missing required claim "${claim}"`,
+        );
+      }
+    }
+
+    return payload as TokenPayload;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError(401, "Invalid or expired access token");
+  }
+}

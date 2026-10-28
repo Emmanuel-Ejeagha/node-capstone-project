@@ -23,7 +23,7 @@ const envSchema = Joi.object({
 });
 
 export function validateEnv(env: Record<string, unknown>): {
-  error: Error;
+  error: Error | null;
   value: Record<string, unknown>;
 } {
   const result = envSchema.validate(env, { abortEarly: false });
