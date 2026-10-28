@@ -45,7 +45,7 @@ adminBannerRouter.delete("/:bannerId", async (req, res, next) => {
     await deleteAdminBannerService(req.params.bannerId);
 
     res.status(200).json({
-      suceess: true,
+      success: true,
       message: "banner deleted successfully",
     });
   } catch (error) {

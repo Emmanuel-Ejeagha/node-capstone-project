@@ -36,7 +36,10 @@ export function errorHandler(
     return;
   }
 
-  logger.error({ err }, "Unhandled error");
+  logger.error(
+  { message: err.message },
+  "Unhandled error",
+);
 
   res.status(500).json({
     success: false,

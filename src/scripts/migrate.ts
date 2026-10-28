@@ -70,7 +70,12 @@ function getMigrationFiles(): string[] {
 
 migrate()
   .catch((error) => {
-    logger.error({ err: error }, "Migrations failed");
+    logger.error(
+  {
+    message: error.message,
+  },
+  "Migrations failed",
+);
     process.exit(1);
   })
   .finally(() => pool.end());

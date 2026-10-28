@@ -3,9 +3,11 @@ import {
   createTask,
   deleteTask,
   findTaskByIdAndUserId,
-  getUserTaskByUserId,
+  getUserTasksPaged,
   updateTaskTitle,
 } from "../repositories/user.task.repositories.js";
+
+export { getUserTasksPaged } from "../repositories/user.task.repositories.js";
 import { Task } from "../types/task.js";
 
 function validateTitle(title: unknown): string {
@@ -32,7 +34,7 @@ export async function createUserTask(
 }
 
 export async function getUserTasks(userId: string): Promise<Task[]> {
-  return getUserTaskByUserId(userId);
+  return getUserTasksPaged(userId).then((result) => result.tasks);
 }
 
 export async function getUserTaskById(

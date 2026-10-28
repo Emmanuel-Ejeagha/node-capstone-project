@@ -8,6 +8,12 @@ export type AdminTaskListQuery = {
 
 export type AdminTaskListResponse = {
   tasks: Task[];
+  metadata: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 };
 
 export type TaskStatus = (typeof TASK_STATUS)[number];
