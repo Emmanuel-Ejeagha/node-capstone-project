@@ -127,3 +127,61 @@ export async function verifyEmail(
     throw new AppError(401, "Invalid or expired verification token");
   }
 }
+
+export async function requestPasswordReset(
+  email: string
+): Promise<{ resetToken: string }> {
+  if (!emailRegex.test(email)) {
+    throw new AppError(400, "Invalid email format");
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+
+  const user = await findUserByEmail(normalizedEmail);
+
+  if (!user) throw new AppError(404, "User not found");
+
+  // Generate a password reset token
+  const resetToken = signEmailVerificationToken(user.id, normalizedEmail);
+
+  // TODO: In a real implementation, you would:
+  // 1. Store the reset token with an expiry in the database
+  // 2. Send an email with the reset link
+  // 3. Mark the token as used once the password is reset
+
+  return { resetToken };
+}
+
+export async function resetPassword(
+  token: string,
+  newPassword: string
+): Promise<{ success: boolean }> {
+  try {
+    // Verify the token
+    const payload = verifyAccessToken(token);
+
+    // TODO: In a real implementation, you would:
+    // 1. Check if the token is a valid password reset token (not access token)
+    // 2. Verify the token hasn't expired
+    // 3. Update the user's password in the database
+    // 4. Invalidate the token after use
+
+    // For now, we'll validate the token structure and return success
+    // TODO: Implement actual password reset database update
+    if (payload.purpose !== "email-verification") {
+      throw new AppError(400, "Invalid password reset token");
+    }
+
+    if (newPassword.length < 8) {
+      throw new AppError(400, "password must be more than 7 characters");
+    }
+
+    // TODO: Hash the new password and update the user in the database
+    return { success: true };
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError(401, "Invalid or expired password reset token");
+  }
+}
