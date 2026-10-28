@@ -1,7 +1,9 @@
 import jwt, { SignOptions } from "jsonwebtoken";
 import { TokenPayload } from "../types/user.js";
-import { env } from "../config/env.js";
 import { AppError } from "../errors/AppError.js";
+import { env } from "../config/env.js";
+
+const REQUIRED_CLAIMS = ["userId", "email", "role"];
 
 export function signAccessToken(payload: TokenPayload) {
   const options: SignOptions = {
@@ -13,8 +15,23 @@ export function signAccessToken(payload: TokenPayload) {
 
 export function verifyAccessToken(token: string): TokenPayload {
   try {
-    return jwt.verify(token, env.jwtAccessSecret) as TokenPayload;
-  } catch {
+    const payload = jwt.verify(token, env.jwtAccessSecret) as Record<string, unknown>;
+
+    // Validate that all required claims are present
+    for (const claim of REQUIRED_CLAIMS) {
+      if (!payload[claim]) {
+        throw new AppError(
+          401,
+          `Invalid token: missing required claim "${claim}"`,
+        );
+      }
+    }
+
+    return payload as TokenPayload;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
     throw new AppError(401, "Invalid or expired access token");
   }
 }
