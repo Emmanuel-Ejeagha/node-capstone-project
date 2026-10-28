@@ -43,3 +43,17 @@ export function verifyRefreshToken(token: string): TokenPayload {
     throw new AppError(401, "Invalid or expired refresh token");
   }
 }
+
+export function signEmailVerificationToken(userId: string, email: string): string {
+  const payload = {
+    userId,
+    email,
+    purpose: "email-verification" as const,
+  };
+
+  const options: SignOptions = {
+    expiresIn: "15m",
+  };
+
+  return jwt.sign(payload, env.jwtAccessSecret, options);
+}
