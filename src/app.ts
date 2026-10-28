@@ -3,6 +3,7 @@ import swaggerUi from "swagger-ui-express";
 import yaml from "js-yaml";
 import fs from "fs";
 import path from "path";
+import helmet from "helmet";
 import cors from "cors";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
@@ -16,6 +17,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(helmet());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
