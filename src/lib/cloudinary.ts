@@ -18,32 +18,52 @@ export async function uploadBannerImageToCloudinary(
 
   if (!cloudName || !apiKey || !apiSecret) {
     throw new AppError(500, "Cloudinary is not configured properly ");
-
-    cloudinary.config({
-      cloud_name: cloudName,
-      api_key: apiKey,
-      api_secret: apiSecret,
-    });
-
-    return new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          resource_type: "image",
-          folder: options?.folder,
-        },
-        (error, result) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-
-          resolve({
-            secureUrl: result?.secure_url ?? "",
-            publicId: result?.public_id ?? "",
-          });
-        },
-      );
-      uploadStream.end(buffer);
-    });
   }
+
+  cloudinary.config({
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret,
+  });
+
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: "image",
+        folder: options?.folder,
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve({
+          secureUrl: result?.secure_url ?? "",
+          publicId: result?.public_id ?? "",
+        });
+      },
+    );
+    uploadStream.end(buffer);
+  });
+}
+
+export async function deleteBannerImageFromCloudinary(
+  publicId: string,
+): Promise<void> {
+  const cloudName = env.cloudinaryCloudName;
+  const apiKey = env.cloudinaryApiKey;
+  const apiSecret = env.cloudinaryApiSecret;
+
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new AppError(500, "Cloudinary is not configured properly ");
+  }
+
+  cloudinary.config({
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret,
+  });
+
+  return cloudinary.uploader.destroy(publicId);
 }
