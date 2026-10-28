@@ -20,7 +20,7 @@ services:
     container_name: nodejs-capstone-project-redis
     restart: unless-stopped
     ports:
-      - "6385:6779"
+      - "6385:6379"
 
 volumes:
   postgres_data:
