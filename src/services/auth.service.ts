@@ -7,12 +7,19 @@ import {
 } from "../repositories/user.repositories.js";
 import bcrypt from "bcryptjs";
 
+// Simple email format validation regex
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export async function registerUser(
   email: string,
   password: string,
 ): Promise<void> {
   if (!email || !password) {
     throw new AppError(400, "Email and password are required");
+  }
+
+  if (!emailRegex.test(email)) {
+    throw new AppError(400, "Invalid email format");
   }
 
   if (password.length < 8) {
@@ -36,6 +43,10 @@ export async function loginUser(
 ): Promise<{ accessToken: string }> {
   if (!email || !password)
     throw new AppError(400, "Email and password are required");
+
+  if (!emailRegex.test(email)) {
+    throw new AppError(400, "Invalid email format");
+  }
 
   const normalizEmail = email.toLowerCase().trim();
   const user = await findUserByEmailWithPassword(normalizEmail);

@@ -28,7 +28,7 @@ deleteCloudinaryImageWorker.on("completed", (job) => {
 deleteCloudinaryImageWorker.on("failed", (job, error) => {
   logger.error(
     {
-      err: error,
+      message: error.message,
       jobId: job?.id,
     },
     "Cloudinary delete job failed",

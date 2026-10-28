@@ -10,7 +10,7 @@ export function requireAdmin(
     next(
       new AppError(403, "Admin access required. You do not have admin access"),
     );
-    next();
+    return;
   }
 
   next();

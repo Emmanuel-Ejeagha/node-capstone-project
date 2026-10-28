@@ -1,16 +1,20 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/auth.middleware.js";
+import { validateTaskId } from "../middleware/validation.middleware.js";
 import {
   createUserTask,
   deleteUserTask,
   getUserTaskById,
   getUserTasks,
+  getUserTasksPaged,
   updateUserTask,
 } from "../services/user.task.service.js";
 
 export const userTaskRouter = Router();
 
 userTaskRouter.use(authenticate);
+
+userTaskRouter.use("/:taskId", validateTaskId);
 
 userTaskRouter.post("/", async (req, res, next) => {
   try {
@@ -29,11 +33,24 @@ userTaskRouter.post("/", async (req, res, next) => {
 
 userTaskRouter.get("/", async (req, res, next) => {
   try {
-    const tasks = await getUserTasks(req.user!.userId);
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const { tasks, totalPages, total } = await getUserTasksPaged(
+      req.user!.userId,
+      page,
+      limit,
+    );
 
     res.status(200).json({
       success: true,
       data: { tasks },
+      pagination: {
+        page,
+        limit,
+        totalPages,
+        total,
+      },
     });
   } catch (error) {
     next(error);
@@ -60,7 +77,7 @@ userTaskRouter.patch("/:taskId", async (req, res, next) => {
       req.body.title,
     );
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       data: { task },
     });
