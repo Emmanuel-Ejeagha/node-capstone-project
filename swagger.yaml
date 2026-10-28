@@ -1,0 +1,423 @@
+openapi: 3.0.3
+info:
+  title: TaskForge API
+  version: 1.0.0
+  description: A Task management API with authentication, authorization, database, caching, and Cloudinary integration
+servers:
+  - url: http://localhost:3000
+    description: Development server
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          nullable: true
+      required: [success, message]
+    SuccessResponse:
+      allOf:
+        - $ref: "#/components/schemas Error"
+        - type: object
+        - properties:
+            success:
+              type: boolean
+              example: true
+            data:
+              type: object
+              description: Response data
+    Authentication:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: User email
+        password:
+          type: string
+          description: User password
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: User UUID
+        email:
+          type: string
+          format: email
+          description: User email
+        role:
+          type: string
+          enum: [USER, ADMIN]
+          description: User role
+        isEmailVerified:
+          type: boolean
+          description: Whether email is verified
+        createdAt:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+security:
+  - bearerAuth: []
+paths:
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      operationId: register
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Authentication"
+      responses:
+        "201":
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Bad request - invalid input or email already registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Conflict - email already registered
+  /api/auth/login:
+    post:
+      summary: Log in with email and password
+      operationId: login
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Authentication"
+      responses:
+        "200":
+          description: Login successful with tokens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: JWT access token
+                  refreshToken:
+                    type: string
+                    description: JWT refresh token
+        "401":
+          description: Unauthorized - invalid credentials
+  /api/auth/me:
+    get:
+      summary: Get current user profile
+      operationId: getMe
+      tags: [Authentication]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized - access token required
+  /api/auth/verify-email:
+    post:
+      summary: Request email verification
+      operationId: requestEmailVerification
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User email
+      responses:
+        "200":
+          description: Verification token generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  verificationToken:
+                    type: string
+                    description: Email verification token
+        "400":
+          description: Invalid email format or email already verified
+  /api/auth/verify-email:
+    get:
+      summary: Verify email with token
+      operationId: verifyEmail
+      tags: [Authentication]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Email verified successfully
+        "401":
+          description: Invalid or expired verification token
+  /api/auth/request-password-reset:
+    post:
+      summary: Request password reset
+      operationId: requestPasswordReset
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User email
+      responses:
+        "200":
+          description: Password reset token generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  resetToken:
+                    type: string
+                    description: Password reset token
+        "400":
+          description: Invalid email format or user not found
+  /api/auth/reset-password:
+    post:
+      summary: Reset password with token
+      operationId: resetPassword
+      tags: [Authentication]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+                  description: New password
+      responses:
+        "200":
+          description: Password reset successful
+        "400":
+          description: Invalid or expired token
+        "401":
+          description: Invalid or expired token
+  /api/tasks:
+    get:
+      summary: Get all tasks (with optional filtering)
+      operationId: getTasks
+      tags: [Tasks]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [PENDING, IN_PROGRESS, COMPLETED]
+            description: Filter by task status
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Search by task title
+      responses:
+        "200":
+          description: List of tasks retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized - access token required
+  /api/tasks:
+    post:
+      summary: Create a new task
+      operationId: createTask
+      tags: [Tasks]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Task title
+                description:
+                  type: string
+                  description: Task description
+                status:
+                  type: string
+                  enum: [PENDING, IN_PROGRESS, COMPLETED]
+                  description: Task status
+      responses:
+        "201":
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Bad request - invalid input
+        "401":
+          description: Unauthorized - access token required
+  /api/tasks/{id}:
+    put:
+      summary: Update a task
+      operationId: updateTask
+      tags: [Tasks]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Task title
+                description:
+                  type: string
+                  description: Task description
+                status:
+                  type: string
+                  enum: [PENDING, IN_PROGRESS, COMPLETED]
+                  description: Task status
+      responses:
+        "200":
+          description: Task updated successfully
+        "400":
+          description: Bad request - invalid input
+        "401":
+          description: Unauthorized - access token required
+        "404":
+          description: Task not found
+  /api/tasks/{id}:
+    delete:
+      summary: Delete a task
+      operationId: deleteTask
+      tags: [Tasks]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Task deleted successfully
+        "401":
+          description: Unauthorized - access token required
+        "404":
+          description: Task not found
+  /api/admin/banners:
+    get:
+      summary: Get all banners
+      operationId: getBanners
+      tags: [Banners]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of banners retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      title: string
+                      description: string
+        "401":
+          description: Unauthorized - admin access required
+  /api/admin/banners:
+    post:
+      summary: Create a new banner
+      operationId: createBanner
+      tags: [Banners]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Banner title
+                imageUrl:
+                  type: string
+                  description: Banner image URL
+      responses:
+        "201":
+          description: Banner created successfully
+        "401":
+          description: Unauthorized - admin access required
