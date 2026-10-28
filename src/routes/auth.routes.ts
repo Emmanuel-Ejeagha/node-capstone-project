@@ -48,12 +48,6 @@ authRouter.post("/login", async (req, res, next) => {
 
 authRouter.post("/logout", authenticate, async (req, res, next) => {
   try {
-    // In a real implementation, you would:
-    // 1. Add the refresh token to a revoked tokens list in Redis
-    // 2. Set a short TTL on the refresh token to invalidate it
-    // 3. Clear the refresh token from the client
-
-    // For now, we'll just return success
     // TODO: Implement actual refresh token revocation in Redis
     res.status(200).json({
       success: true,
@@ -62,4 +56,13 @@ authRouter.post("/logout", authenticate, async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+authRouter.get("/me", authenticate, (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: {
+      user: req.user,
+    },
+  });
 });
